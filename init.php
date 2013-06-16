@@ -20,7 +20,7 @@ require_once 'functions.php';
 
 $localdir = "D:/Site/$talkingSite/";
 
-is_dir($localdir) || dir('NO Local system tomanage');
+is_dir($localdir) || die('NO Local system tomanage');
 
 
 $submit = '';
