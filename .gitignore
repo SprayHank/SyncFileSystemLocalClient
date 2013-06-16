@@ -1,2 +1,3 @@
 package.zip
 *.log
+CONFIG_*.php
