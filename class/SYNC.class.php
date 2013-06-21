@@ -2,11 +2,11 @@
 
 class SYNC {
 	public static $CONFIG = array();
-	public static $HTMLHEAD = '<!DocType HTML><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
-	public static $HTMLTITLE = '<title>网站文件同步系统</title>';
-	public static $ENDHTMLHEAD = '</head><body>';
-	public static $ENDHTML = '</body></html>';
-	public static $HTMLCONTROLIFRAME = '<iframe name="controlFrame" style="display:none;"></iframe>';
+	private static $HTMLHEAD = '<!DocType HTML><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+	private static $HTMLTITLE = '<title>网站文件同步系统</title>';
+	private static $ENDHTMLHEAD = '</head><body>';
+	private static $ENDHTML = '</body></html>';
+	private static $HTMLCONTROLIFRAME = '<iframe name="controlFrame" style="display:none;"></iframe>';
 
 	public function init_ignores(){
 		GLOBAL $IGNORES;
@@ -23,19 +23,17 @@ class SYNC {
 	}
 
 	public function init_feedback_control(){
-		$HTMLTemplate = '';
-		$HTMLTemplate .= self::$HTMLHEAD.self::$ENDHTMLHEAD;
+		$HTMLTemplate = self::$HTMLHEAD.self::$ENDHTMLHEAD;
 	}
 
-	private  function wrap_html_element(string $element){
+	private function wrap_html_element(string $element){
 		return '<div class="wrapper">'.$element.'</div>';
 	}
 
 	public function init_page(){
 		GLOBAL $IGNORES;
 
-		$HTMLTemplate = '';
-		$HTMLTemplate .= self::$HTMLHEAD.self::$HTMLTITLE.self::$ENDHTMLHEAD;
+		$HTMLTemplate = self::$HTMLHEAD.self::$HTMLTITLE.self::$ENDHTMLHEAD;
 		$HTMLTemplate .= '<div id="head_banner">'.self::wrap_html_element('<a class="home" href="sync.php">自开发（无鉴权）网站文件同步系统</a>').'</div>';
 
 		$HTMLTemplate .= <<<HTML
@@ -53,9 +51,9 @@ class SYNC {
 	<input type='button' value='测试' onclick='ssd()'>
 	<input type='hidden' name='operation' value='' />
 	<input type='text' name='list' style="width:400px;"/>
-	<input type="submit" name="do" value="upload">
-	<input type="submit" name="do" value="dnload">
-	<input type="submit" name="do" value="MD5 Compare">
+	<input type="submit" name="do" value="upload" />
+	<input type="submit" name="do" value="dnload" />
+	<input type="submit" name="do" value="MD5 Compare" />
 </div>
 <script language='javascript'>
 	function selrev() {
@@ -192,7 +190,7 @@ HTML;
 
 
 
-	public static $FILETYPE = array(
+	private static $FILETYPE = array(
 		'*'       => 'application/octet-stream',
 		'001'     => 'application/x-001',
 		'301'     => 'application/x-301',
