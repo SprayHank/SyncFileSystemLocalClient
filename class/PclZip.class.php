@@ -189,7 +189,7 @@ class PclZip {
 		foreach($v_att_list as $v_entry) {
 			$v_result = $this->privFileDescrParseAtt(
 				$v_entry,
-				$v_filedescr_list[],
+				$v_filedescr_list,
 				$v_options,
 				$v_supported_attributes
 			);
@@ -288,7 +288,7 @@ class PclZip {
 		foreach($v_att_list as $v_entry) {
 			$v_result = $this->privFileDescrParseAtt(
 				$v_entry,
-				$v_filedescr_list[],
+				$v_filedescr_list,
 				$v_options,
 				$v_supported_attributes
 			);
@@ -986,7 +986,8 @@ class PclZip {
 
 
 	function privFileDescrParseAtt(&$p_file_list, &$p_filedescr, $v_options, $v_requested_options = FALSE) {
-		$v_result = 1;
+		$v_result      = 1;
+		$p_filedescr[] = & $_p_filedescr;
 		foreach($p_file_list as $v_key => $v_value) {
 			if(!isset($v_requested_options[$v_key])) {
 				PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER, "Invalid file attribute '".$v_key."' for this file");
@@ -996,61 +997,69 @@ class PclZip {
 			switch($v_key) {
 				case PCLZIP_ATT_FILE_NAME :
 					if(!is_string($v_value)) {
-						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE, "Invalid type ".gettype($v_value).". String expected for attribute '".PclZipUtilOptionText($v_key)."'");
+						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE
+							, "Invalid type ".gettype($v_value).". String expected for attribute '".PclZipUtilOptionText($v_key)."'");
 
 						return PclZip::errorCode();
 					}
-					$p_filedescr['filename'] = PclZipUtilPathReduction($v_value);
-					if($p_filedescr['filename'] == '') {
-						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE, "Invalid empty filename for attribute '".PclZipUtilOptionText($v_key)."'");
+					$_p_filedescr['filename'] = PclZipUtilPathReduction($v_value);
+					if($_p_filedescr['filename'] == '') {
+						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE
+							, "Invalid empty filename for attribute '".PclZipUtilOptionText($v_key)."'");
 
 						return PclZip::errorCode();
 					}
 					break;
 				case PCLZIP_ATT_FILE_NEW_SHORT_NAME :
 					if(!is_string($v_value)) {
-						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE, "Invalid type ".gettype($v_value).". String expected for attribute '".PclZipUtilOptionText($v_key)."'");
+						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE
+							, "Invalid type ".gettype($v_value).". String expected for attribute '".PclZipUtilOptionText($v_key)."'");
 
 						return PclZip::errorCode();
 					}
-					$p_filedescr['new_short_name'] = PclZipUtilPathReduction($v_value);
-					if($p_filedescr['new_short_name'] == '') {
-						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE, "Invalid empty short filename for attribute '".PclZipUtilOptionText($v_key)."'");
+					$_p_filedescr['new_short_name'] = PclZipUtilPathReduction($v_value);
+					if($_p_filedescr['new_short_name'] == '') {
+						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE
+							, "Invalid empty short filename for attribute '".PclZipUtilOptionText($v_key)."'");
 
 						return PclZip::errorCode();
 					}
 					break;
 				case PCLZIP_ATT_FILE_NEW_FULL_NAME :
 					if(!is_string($v_value)) {
-						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE, "Invalid type ".gettype($v_value).". String expected for attribute '".PclZipUtilOptionText($v_key)."'");
+						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE
+							, "Invalid type ".gettype($v_value).". String expected for attribute '".PclZipUtilOptionText($v_key)."'");
 
 						return PclZip::errorCode();
 					}
-					$p_filedescr['new_full_name'] = PclZipUtilPathReduction($v_value);
-					if($p_filedescr['new_full_name'] == '') {
-						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE, "Invalid empty full filename for attribute '".PclZipUtilOptionText($v_key)."'");
+					$_p_filedescr['new_full_name'] = PclZipUtilPathReduction($v_value);
+					if($_p_filedescr['new_full_name'] == '') {
+						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE
+							, "Invalid empty full filename for attribute '".PclZipUtilOptionText($v_key)."'");
 
 						return PclZip::errorCode();
 					}
 					break;
 				case PCLZIP_ATT_FILE_COMMENT :
 					if(!is_string($v_value)) {
-						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE, "Invalid type ".gettype($v_value).". String expected for attribute '".PclZipUtilOptionText($v_key)."'");
+						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE
+							, "Invalid type ".gettype($v_value).". String expected for attribute '".PclZipUtilOptionText($v_key)."'");
 
 						return PclZip::errorCode();
 					}
-					$p_filedescr['comment'] = $v_value;
+					$_p_filedescr['comment'] = $v_value;
 					break;
 				case PCLZIP_ATT_FILE_MTIME :
 					if(!is_integer($v_value)) {
-						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE, "Invalid type ".gettype($v_value).". Integer expected for attribute '".PclZipUtilOptionText($v_key)."'");
+						PclZip::privErrorLog(PCLZIP_ERR_INVALID_ATTRIBUTE_VALUE
+							, "Invalid type ".gettype($v_value).". Integer expected for attribute '".PclZipUtilOptionText($v_key)."'");
 
 						return PclZip::errorCode();
 					}
-					$p_filedescr['mtime'] = $v_value;
+					$_p_filedescr['mtime'] = $v_value;
 					break;
 				case PCLZIP_ATT_FILE_CONTENT :
-					$p_filedescr['content'] = $v_value;
+					$_p_filedescr['content'] = $v_value;
 					break;
 				default :
 					PclZip::privErrorLog(
