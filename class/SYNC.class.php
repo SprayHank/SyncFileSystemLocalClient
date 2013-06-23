@@ -6,7 +6,6 @@ class SYNC {
 	private static $HTMLTITLE = '<title>网站文件同步系统</title>';
 	private static $ENDHTMLHEAD = '</head><body>';
 	private static $ENDHTML = '</body></html>';
-	private static $HTMLCONTROLIFRAME = '<iframe name="controlFrame" style="display:none;"></iframe>';
 
 	public function init_ignores(){
 		GLOBAL $IGNORES;
@@ -22,13 +21,13 @@ class SYNC {
 		return '<script type="text/javascript">'.$script.'</script>';
 	}
 
-	public function end_print_feedback(string $elements){
+	public function end_print_feedback( $elements){
 		$HTMLTemplate = self::$HTMLHEAD.self::$ENDHTMLHEAD;
 		$HTMLTemplate .= $elements.self::$ENDHTML;
 		exit($HTMLTemplate);
 	}
 
-	private function wrap_html_element(string $element){
+	private function wrap_html_element( $element){
 		return '<div class="wrapper">'.$element.'</div>';
 	}
 
@@ -62,7 +61,7 @@ class SYNC {
 		with (document.myform) {
 			for (i = 0; i < elements.length; i++) {
 				var thiselm = elements[i];
-				if (thiselm.name.match(/includefiles\[\]/))    thiselm.checked = !thiselm.checked;
+				if(thiselm.name.match(/includefiles\[\]/))thiselm.checked = !thiselm.checked;
 			}
 		}
 	}
@@ -70,7 +69,7 @@ class SYNC {
 		with (document.myform) {
 			for (i = 0; i < elements.length; i++) {
 				var thiselm = elements[i];
-				if (thiselm.name.match(/includefiles\[\]/))    thiselm.indeterminate = !thiselm.indeterminate;
+				if(thiselm.name.match(/includefiles\[\]/))thiselm.indeterminate = !thiselm.indeterminate;
 			}
 		}
 	}
