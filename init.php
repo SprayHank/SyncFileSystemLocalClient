@@ -1,11 +1,11 @@
 <?php defined('SYNCSYSTEM') || die('No direct script access.');
 
 if(!@$_REQUEST['talkingSite']) {
-	$talkingSite = substr(@$_SERVER['HTTP_REFERER'], 7, (strpos(@$_SERVER['HTTP_REFERER'], 'sync.php') - 8));
+	$SessionSite = substr(@$_SERVER['HTTP_REFERER'], 7, (strpos(@$_SERVER['HTTP_REFERER'], 'sync.php') - 8));
 } else {
-	$talkingSite = $_REQUEST['talkingSite'];
+	$SessionSite = $_REQUEST['talkingSite'];
 }
-if(!$talkingSite) {
+if(!$SessionSite) {
 	exit($head.' unknow site!!'.$foot);
 }
 
@@ -32,7 +32,7 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 require 'config.php';
 require 'functions.php';
 
-$localdir = "D:/Site/$talkingSite/";
+$localdir = "D:/Site/$SessionSite/";
 
 is_dir($localdir) || die('NO Local system tomanage');
 
@@ -112,7 +112,7 @@ HTML;
 
 		$package = realpath('package.zip');
 		$data    = array('file' => "@$package");
-		$res     = curlrequest("http://$talkingSite/sync.php?operation=push", $data);
+		$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
 		echo($res);
 		//$hiddenform .= "<input type='hidden' name='operation' value='' />";
 	} elseif($_REQUEST['do'] == 'sync'){
@@ -148,13 +148,13 @@ HTML;
 			packfiles($upload);
 			$package = realpath('package.zip');
 			$data    = array('file' => "@$package");
-			$res     = curlrequest("http://$talkingSite/sync.php?operation=push", $data);
+			$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
 			echo($res);
 		}
 	}
 	echo <<<FOM
 		\n
-<form action="http://$talkingSite/sync.php" method="post" enctype="multipart/form-data">
+<form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
 <label for="file">Filename:</label>
 $hiddenform
 <br />
@@ -169,7 +169,7 @@ if($_REQUEST['operation'] == 'postpackagetoremote') {
 
 	//echo realpath('package.zip');
 	$package = realpath('package.zip');
-	$res     = curlrequest("http://$talkingSite/sync.php?operation=push", array('file' => "@$package"));
+	$res     = curlrequest("http://$SessionSite/sync.php?operation=push", array('file' => "@$package"));
 	echo $res;
 	exit;
 }
@@ -215,7 +215,7 @@ if($_REQUEST['operation'] == 'md5checkedsync') {
 	} else {
 		$data = array('delete' => serialize($delete), 'dnload' => serialize($dnload));
 	}
-	$res = curlrequest("http://$talkingSite/sync.php?operation=md5checkedsync", $data);
+	$res = curlrequest("http://$SessionSite/sync.php?operation=md5checkedsync", $data);
 	echo $res;
 	exit;
 	/*echo <<<HTML
@@ -235,7 +235,7 @@ HTML;*/
 
 } elseif($_REQUEST['operation'] == 'md5ResultToLocal') {
 	echo '<form action="sync.php?operation=aftermd5check" method="post">';
-	echo "<input type='hidden' name='talkingSite' value='$talkingSite' />";
+	echo "<input type='hidden' name='talkingSite' value='$SessionSite' />";
 	$ignorelist = file_get_contents($localdir.'./sync/ignorelist.txt');
 	$ignorelist = explode("\n", trim($ignorelist));
 	foreach($_POST['file'] as $file => $md5) {
@@ -268,7 +268,7 @@ HTML;
 	if($_REQUEST['submit'] == '') {
 		echo $head;
 		echo <<<HTM
-		选择要压缩的文件或目录：<a href="http://$talkingSite/sync.php">浏览远程文件</a><br>
+		选择要压缩的文件或目录：<a href="http://$SessionSite/sync.php">浏览远程文件</a><br>
 		<form name="myform" method="post" action="$_SERVER[PHP_SELF]">
 HTM;
 		$fdir = opendir($localdir);
@@ -309,7 +309,7 @@ HTM;
 		<div style="clear:both;">
 			<input type='button' value='反选' onclick='selrev();'>
 			<input type='button' value='测试' onclick='ssd()'>
-			<input type='hidden' name='talkingSite' value="<?= $talkingSite ?>"/>
+			<input type='hidden' name='talkingSite' value="<?= $SessionSite ?>"/>
 			<input type='text' name='list' style="width:400px;"/>
 			<input type="submit" name="submit" value="zip">
 			<input type="submit" name="submit" value="md5">
@@ -345,7 +345,7 @@ HTM;
 
 		$package = realpath('package.zip');
 		$data    = array('file' => "@$package");
-		$res     = curlrequest("http://$talkingSite/sync.php?operation=push", $data);
+		$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
 		echo $res;
 		echo $foot;
 
@@ -434,9 +434,9 @@ function curlrequest($url, $data, $method = 'post') {
 }
 
 function pulltolocal() {
-	global $talkingSite, $localdir;
+	global $SessionSite, $localdir;
 	$reuslt = "";
-	$reuslt = file_get_contents("http://$talkingSite/package.zip");
+	$reuslt = file_get_contents("http://$SessionSite/package.zip");
 	$fp     = fopen('./package.zip', 'w');
 	fwrite($fp, $reuslt);
 	fclose($fp);
