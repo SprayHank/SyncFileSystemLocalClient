@@ -9,6 +9,10 @@ if(!$SessionSite) {
 	exit($head.' unknow site!!'.$foot);
 }
 
+$localdir = "D:/Site/$SessionSite/";
+
+is_dir($localdir) || die('NO Local system tomanage');
+
 spl_autoload_register('sync_autoload');
 function sync_autoload($class){
 	$cls = './class/'.$class.'.class.php';
@@ -32,9 +36,6 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 require 'config.php';
 require 'functions.php';
 
-$localdir = "D:/Site/$SessionSite/";
-
-is_dir($localdir) || die('NO Local system tomanage');
 
 
 $submit = '';
