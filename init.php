@@ -9,9 +9,9 @@ if(!$SessionSite) {
 	exit($head.' unknow site!!'.$foot);
 }
 
-$localdir = "D:/Site/$SessionSite/";
+define('LOCAL_DIR', "D:/Site/$SessionSite/");
 
-is_dir($localdir) || die('NO Local system tomanage');
+is_dir(LOCAL_DIR) || die('NO Local system tomanage');
 
 spl_autoload_register('sync_autoload');
 function sync_autoload($class){
@@ -34,6 +34,7 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 }
 require 'config.php';
+SYNC::init_ignores();
 require 'functions.php';
 
 
@@ -50,6 +51,12 @@ if($do != ''){
 	$list = isset($_REQUEST['list']) ? str_replace('"', '',str_replace($localdir, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
 	$listArray = explode(' ', $list);
 	$targetList = array_merge($listArray, $includefiles);
+	switch($do){
+		case 'MD5 Compare':
+			$func = str_replace(' ', '_', $do);
+			call_user_func_array(array('SYNC', $func), array($targetList));
+			break;
+	}
 }
 
 
@@ -63,48 +70,6 @@ if(@!$_REQUEST['do']) {
 	echo $head;
 	$hiddenform = '';
 	if($_REQUEST['do'] == 'MD5 Compare') {
-		//		$fp = fopen('./md5.xml', 'w');
-		//		fwrite($fp, '');
-		//		fclose($fp);
-		//		$fp = fopen('./md5.xml', 'a');
-		function listfiles($dir = ".") {
-			global $sublevel, $localdir, $fp, $ignores, $hiddenform;
-			$sub_file_num = 0;
-			$dir          = preg_replace('/^\.\//i', '', $dir);
-			$realdir      = $localdir.$dir;
-			if(is_file("$realdir")) {
-				//fwrite($fp, md5_file($realdir) . ' *' . $dir."\n");
-				$hiddenform .= '<input type="hidden" name="file['.g2u($dir).']" value="'.md5_file($realdir).'" />'."\n";
-				return 1;
-			}
-
-			$handle = opendir("$realdir");
-			$sublevel++;
-			while($file = readdir($handle)) {
-				if(preg_match($ignores, $file)) continue;
-				$sub_file_num += listfiles("$dir/$file");
-			}
-			closedir($handle);
-			$sublevel--;
-			return $sub_file_num;
-		}
-
-
-		$filenum  = 0;
-		$sublevel = 0;
-
-		foreach($targetList as $file) {
-			$filenum += listfiles($file);
-		}
-		$includefiles = serialize($includefiles);
-		$hiddenform .= <<<HTML
-<input type="hidden" name="operation" value="md5" />
-<input type="hidden" name="list" value="$list" />
-<input type="hidden" name="includefiles" value="$_REQUEST[includefiles]" />
-HTML;
-
-		//$package->createfile();
-		//fclose($fp);
 
 	} elseif($_REQUEST['do'] == 'upload'){
 
