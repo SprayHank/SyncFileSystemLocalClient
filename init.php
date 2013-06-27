@@ -15,6 +15,20 @@ function sync_autoload($class){
 	is_file($cls) && is_readable($cls) && require($cls);//目标为文件（非目录），可读，载入
 }
 
+//兼容转义字符处理
+set_magic_quotes_runtime(0);
+if(get_magic_quotes_gpc()) {
+	function stripslashes_deep($value) {
+		$value = is_array($value) ? array_map('stripslashes_deep', $value) : stripslashes($value);
+
+		return $value;
+	}
+
+	$_POST    = array_map('stripslashes_deep', $_POST);
+	$_GET     = array_map('stripslashes_deep', $_GET);
+	$_COOKIE  = array_map('stripslashes_deep', $_COOKIE);
+	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
+}
 require 'config.php';
 require 'functions.php';
 
