@@ -27,6 +27,54 @@ class SYNC {
 		exit($HTMLTemplate);
 	}
 
+	private function listfiles($dir = ".") {
+		GLOBAL $sublevel, $localdir, $fp, $ignores, $hiddenform;
+		$sub_file_num = 0;
+		$dir          = preg_replace('/^\.\//i', '', $dir);
+		$realdir      = $localdir.$dir;
+		if(is_file("$realdir")) {
+			//fwrite($fp, md5_file($realdir) . ' *' . $dir."\n");
+			$hiddenform .= '<input type="hidden" name="file['.g2u($dir).']" value="'.md5_file($realdir).'" />'."\n";
+			return 1;
+		}
+
+		$handle = opendir("$realdir");
+		$sublevel++;
+		while($file = readdir($handle)) {
+			if($file == '.' || $file == '..' || preg_match($ignores, $file)) continue;
+			$sub_file_num += listfiles("$dir/$file");
+		}
+		closedir($handle);
+		$sublevel--;
+		return $sub_file_num;
+	}
+
+
+
+	public static function MD5_Compare($targetList){
+		//		$fp = fopen('./md5.xml', 'w');
+		//		fwrite($fp, '');
+		//		fclose($fp);
+		//		$fp = fopen('./md5.xml', 'a');
+
+
+		$filenum  = 0;
+		$sublevel = 0;
+
+		foreach($targetList as $file) {
+			$filenum += listfiles($file);
+		}
+		$includefiles = serialize($includefiles);
+		$hiddenform .= <<<HTML
+<input type="hidden" name="operation" value="md5" />
+<input type="hidden" name="list" value="$list" />
+<input type="hidden" name="includefiles" value="$_REQUEST[includefiles]" />
+HTML;
+
+		//$package->createfile();
+		//fclose($fp);
+	}
+
 	private function wrap_html_element( $element){
 		return '<div class="wrapper">'.$element.'</div>';
 	}
