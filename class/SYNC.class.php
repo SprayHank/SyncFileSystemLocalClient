@@ -7,7 +7,7 @@ class SYNC {
 	private static $ENDHTMLHEAD = '</head><body>';
 	private static $ENDHTML = '</body></html>';
 
-	public function init_ignores(){
+	public static function init_ignores(){
 		GLOBAL $IGNORES;
 		$IGNORES = '';
 		if(isset(self::$CONFIG['IGNORE_FILE_LIST'])){
@@ -17,7 +17,7 @@ class SYNC {
 			$IGNORES = '/^('.$IGNORES.')$/i';
 		}
 	}
-	public function print_script(string $script){
+	public static function print_script($script){
 		return '<script type="text/javascript">'.$script.'</script>';
 	}
 
