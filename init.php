@@ -5,18 +5,18 @@ if(!@$_REQUEST['talkingSite']) {
 } else {
 	$talkingSite = $_REQUEST['talkingSite'];
 }
-require 'config.php';
 if(!$talkingSite) {
 	exit($head.' unknow site!!'.$foot);
 }
 
 spl_autoload_register('sync_autoload');
 function sync_autoload($class){
-	$cls = './'.$class.'.class.php';
-	is_readable($cls) && require($cls);
+	$cls = './class/'.$class.'.class.php';
+	is_file($cls) && is_readable($cls) && require($cls);//目标为文件（非目录），可读，载入
 }
 
-require_once 'functions.php';
+require 'config.php';
+require 'functions.php';
 
 $localdir = "D:/Site/$talkingSite/";
 
@@ -30,14 +30,20 @@ isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
 $do = '';
 isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 
-
-if(@!$_REQUEST['do']) {
-} else {
-
+if($do != ''){
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
 	$list = isset($_REQUEST['list']) ? str_replace('"', '',str_replace($localdir, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
 	$listArray = explode(' ', $list);
 	$targetList = array_merge($listArray, $includefiles);
+}
+
+
+exit;
+
+
+if(@!$_REQUEST['do']) {
+} else {
+
 
 	echo $head;
 	$hiddenform = '';
@@ -492,17 +498,12 @@ function pulltolocal() {
 //fclose($fp);
 //echo($resp_str); //处理返回值.
 ////unset ($resp_str);
-?>
-<?php
 /**/
 //$url = 'http://localhost/test/curl.php';
 //$data = "request from put method";
 //$return = curlrequest($url, $data, 'put');
 //var_dump($return);
 //exit;
-?>
-
-<?php
 /*//接收POST參數的URL
 	$url = 'http://www.google.com';
 
@@ -555,6 +556,9 @@ function pulltolocal() {
 		fclose($fp);
 		return $results;
 	}*/
+function MD5_Compare(){
+
+}
 function sendpost($url, $data) {
 	//先解析url
 	$url      = parse_url($url);
@@ -605,8 +609,6 @@ var_dump($reuslt);
 //$arguments = file_get_contents('php://input');
 //print_r($arguments);*/
 
-?>
-<?php
 /*$fp = fsockopen("127.0.0.1", 1024, $errno, $errstr, 10);
 
 $filename = '2012_07_23.zip'; //要发送的文件
@@ -625,10 +627,6 @@ for ($i = 0; $i < $data_count; $i++) {
 }
 
 fclose($fp);*/
-?>
-
-
-<?php
 /*//<1> 重定向功能，这种最常见
 Header("Location: http://www.liehuo.net/");
 
