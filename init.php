@@ -1,9 +1,9 @@
 <?php defined('SYNCSYSTEM') || die('No direct script access.');
 
-if(!@$_REQUEST['talkingSite']) {
+if(!@$_REQUEST['SessionSite']) {
 	$SessionSite = substr(@$_SERVER['HTTP_REFERER'], 7, (strpos(@$_SERVER['HTTP_REFERER'], 'sync.php') - 8));
 } else {
-	$SessionSite = $_REQUEST['talkingSite'];
+	$SessionSite = $_REQUEST['SessionSite'];
 }
 if(!$SessionSite) {
 	exit($head.' unknow site!!'.$foot);
@@ -235,7 +235,7 @@ HTML;*/
 
 } elseif($_REQUEST['operation'] == 'md5ResultToLocal') {
 	echo '<form action="sync.php?operation=aftermd5check" method="post">';
-	echo "<input type='hidden' name='talkingSite' value='$SessionSite' />";
+	echo "<input type='hidden' name='SessionSite' value='$SessionSite' />";
 	$ignorelist = file_get_contents($localdir.'./sync/ignorelist.txt');
 	$ignorelist = explode("\n", trim($ignorelist));
 	foreach($_POST['file'] as $file => $md5) {
@@ -309,7 +309,7 @@ HTM;
 		<div style="clear:both;">
 			<input type='button' value='反选' onclick='selrev();'>
 			<input type='button' value='测试' onclick='ssd()'>
-			<input type='hidden' name='talkingSite' value="<?= $SessionSite ?>"/>
+			<input type='hidden' name='SessionSite' value="<?= $SessionSite ?>"/>
 			<input type='text' name='list' style="width:400px;"/>
 			<input type="submit" name="submit" value="zip">
 			<input type="submit" name="submit" value="md5">
