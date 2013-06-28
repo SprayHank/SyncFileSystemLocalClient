@@ -54,9 +54,18 @@ if($do != ''){
 	switch($do){
 		case 'MD5 Compare':
 			$func = str_replace(' ', '_', $do);
-			call_user_func_array(array('SYNC', $func), array($targetList));
+			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
+			break;
+		default:
 			break;
 	}
+	echo <<<FOM
+		\n
+<form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
+$hiddenform
+</form>
+<script type="text/javascript">document.getElementsByTagName('FORM')[0].submit();</script>
+FOM;
 }
 
 
@@ -83,17 +92,7 @@ if(@!$_REQUEST['do']) {
 		//$hiddenform .= "<input type='hidden' name='operation' value='' />";
 	} elseif($_REQUEST['do'] == 'sync'){
 	}
-	echo <<<FOM
-		\n
-<form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
-<label for="file">Filename:</label>
-$hiddenform
-<br />
-<script type="text/javascript">
-document.getElementsByTagName('FORM')[0].submit();
-</script>
-</form>
-FOM;
+
 	exit;
 }
 if($_REQUEST['operation'] == 'postpackagetoremote') {
