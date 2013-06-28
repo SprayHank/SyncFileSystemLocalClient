@@ -14,8 +14,8 @@ define('LOCAL_DIR', "D:/Site/$SessionSite/");
 is_dir(LOCAL_DIR) || die('NO Local system tomanage');
 
 spl_autoload_register('sync_autoload');
-function sync_autoload($class){
-	$cls = './class/'.$class.'.class.php';
+function sync_autoload($class) {
+	$cls = dirname(__FILE__).'/class/'.$class.'.class.php';
 	is_file($cls) && is_readable($cls) && require($cls);//目标为文件（非目录），可读，载入
 }
 
