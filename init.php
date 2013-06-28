@@ -82,41 +82,6 @@ if(@!$_REQUEST['do']) {
 		echo($res);
 		//$hiddenform .= "<input type='hidden' name='operation' value='' />";
 	} elseif($_REQUEST['do'] == 'sync'){
-		$upload = $dnload = $delete = array();
-		foreach($_POST['file'] as $file => $option) {
-			switch($option) {
-				case 'ignore':
-					$ignorelist = file_get_contents($localdir.'./sync/ignorelist.txt');
-					if(!in_array($file, explode("\n", $ignorelist))) {
-						$fp = fopen($localdir.'./sync/ignorelist.txt', 'a');
-						fwrite($fp, "\n$file");
-						fclose($fp);
-					}
-					break;
-				case 'upload':
-					$upload[] = $file;
-					break;
-				case 'dnload':
-					$dnload[] = $file;
-					//echo '<input type="hidden" name="dnload[]" value="' . $file . '" />';
-					break;
-				case 'delete':
-					//@unlink(u2g($localdir.$file));
-					$delete[] = $file;
-					//echo '<input type="hidden" name="delete[]" value="' . $file . '" />';
-					break;
-			}
-			$op = $option.'[]';
-			$hiddenform .= "<input type='hidden' name='$op' value='$file' />\n";
-		}
-		$hiddenform .= "<input type='hidden' name='operation' value='md5checkedsync' />";
-		if(count($upload)) {
-			packfiles($upload);
-			$package = realpath('package.zip');
-			$data    = array('file' => "@$package");
-			$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
-			echo($res);
-		}
 	}
 	echo <<<FOM
 		\n
