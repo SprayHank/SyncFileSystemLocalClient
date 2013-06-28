@@ -37,8 +37,8 @@ class SYNC {
 
 
 
-	private static function listfiles($dir = ".") {
-		GLOBAL $sublevel, $fp, $IGNORES, $hiddenform;
+	private static function listfiles($dir = ".", $hiddenform = '') {
+		GLOBAL $sublevel, $fp, $IGNORES;
 		$sub_file_num = 0;
 		$dir          = preg_replace('/^\.\//i', '', $dir);//删除“当前文件夹”起始指示符
 		$realdir      = LOCAL_DIR.$dir;
@@ -52,7 +52,7 @@ class SYNC {
 		$sublevel++;
 		while($file = readdir($handle)) {
 			if($file == '.' || $file == '..' || preg_match($IGNORES, $file)) continue;
-			$sub_file_num += self::listfiles("$dir/$file");
+			$sub_file_num += self::listfiles("$dir/$file", $hiddenform);
 		}
 		closedir($handle);
 		$sublevel--;
@@ -72,7 +72,7 @@ class SYNC {
 		$sublevel = 0;
 
 		foreach($targetList as $file) {
-			$filenum += self::listfiles($file);
+			$filenum += self::listfiles($file, $hiddenform);
 		}
 		//$includefiles = serialize($includefiles);
 
