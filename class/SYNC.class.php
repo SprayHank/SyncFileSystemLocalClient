@@ -44,7 +44,7 @@ class SYNC {
 		$realdir      = LOCAL_DIR.$dir;
 		if(is_file("$realdir")) {
 			//fwrite($fp, md5_file($realdir) . ' *' . $dir."\n");
-			echo '<input type="hidden" name="file['.g2u($dir).']" value="'.md5_file($realdir).'" />'."\n";
+			$hiddenform .= '<input type="hidden" name="file['.g2u($dir).']" value="'.md5_file($realdir).'" />'."\n";
 			return 1;
 		}
 
@@ -66,7 +66,7 @@ class SYNC {
 		//		fwrite($fp, '');
 		//		fclose($fp);
 		//		$fp = fopen('./md5.xml', 'a');
-
+		$hiddenform = '';
 
 		$filenum  = 0;
 		$sublevel = 0;
@@ -75,14 +75,10 @@ class SYNC {
 			$filenum += self::listfiles($file);
 		}
 		//$includefiles = serialize($includefiles);
-		/*$hiddenform .= <<<HTML
-<input type="hidden" name="operation" value="md5" />
-<input type="hidden" name="list" value="$list" />
-<input type="hidden" name="includefiles" value="$_REQUEST[includefiles]" />
-HTML;*/
 
 		//$package->createfile();
 		//fclose($fp);
+		return $hiddenform;
 	}
 
 
