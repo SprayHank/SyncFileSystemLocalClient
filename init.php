@@ -63,6 +63,9 @@ if($do != ''){
 	echo <<<FOM
 		\n
 <form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
+<input type="hidden" name="operation" value="after $do on local" />
+<input type="hidden" name="list" value="$list" />
+<input type="hidden" name="includefiles" value="$_REQUEST[includefiles]" />
 $hiddenform
 </form>
 <script type="text/javascript">document.getElementsByTagName('FORM')[0].submit();</script>
