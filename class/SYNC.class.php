@@ -37,26 +37,27 @@ class SYNC {
 
 
 
-	private static function listfiles($dir = ".", $hiddenform = '') {
+	private static function listfiles($dir = ".") {
 		GLOBAL $sublevel, $fp, $IGNORES;
-		$sub_file_num = 0;
+		//$sub_file_num = 0;
+		$return = '';
 		$dir          = preg_replace('/^\.\//i', '', $dir);//删除“当前文件夹”起始指示符
 		$realdir      = LOCAL_DIR.$dir;
 		if(is_file("$realdir")) {
 			//fwrite($fp, md5_file($realdir) . ' *' . $dir."\n");
-			$hiddenform .= '<input type="hidden" name="file['.g2u($dir).']" value="'.md5_file($realdir).'" />'."\n";
-			return 1;
+			return  ('<input type="hidden" name="file['.g2u($dir).']" value="'.md5_file($realdir).'" />'."\n");
+
 		}
 
 		$handle = opendir("$realdir");
 		$sublevel++;
 		while($file = readdir($handle)) {
 			if($file == '.' || $file == '..' || preg_match($IGNORES, $file)) continue;
-			$sub_file_num += self::listfiles("$dir/$file", $hiddenform);
+			$return .= self::listfiles("$dir/$file");
 		}
 		closedir($handle);
 		$sublevel--;
-		return $sub_file_num;
+		return $return;
 	}
 
 
@@ -72,7 +73,7 @@ class SYNC {
 		$sublevel = 0;
 
 		foreach($targetList as $file) {
-			$filenum += self::listfiles($file, $hiddenform);
+			$hiddenform .= self::listfiles($file);
 		}
 		//$includefiles = serialize($includefiles);
 
