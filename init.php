@@ -57,6 +57,7 @@ if($do != ''){
 			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
 			break;
 		default:
+			exit('Unkonwn operation');
 			break;
 	}
 	echo <<<FOM
