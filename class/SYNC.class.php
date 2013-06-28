@@ -86,7 +86,7 @@ HTML;*/
 	}
 
 
-	public static function sync(){
+	public static function _sync(){//这个居然是构造函数？？？只能在前面加下划线
 
 		$upload = $dnload = $delete = array();
 		foreach($_POST['file'] as $file => $option) {
