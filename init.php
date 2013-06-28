@@ -48,7 +48,7 @@ isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 
 if($do != ''){
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
-	$list = isset($_REQUEST['list']) ? str_replace('"', '',str_replace($localdir, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
+	$list = isset($_REQUEST['list']) ? str_replace('"', '',str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
 	$listArray = explode(' ', $list);
 	$targetList = array_merge($listArray, $includefiles);
 	switch($do){
@@ -65,7 +65,7 @@ if($do != ''){
 <form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
 <input type="hidden" name="operation" value="after $do on local" />
 <input type="hidden" name="list" value="$list" />
-<input type="hidden" name="includefiles" value="$_REQUEST[includefiles]" />
+<input type="hidden" name="includefiles" value="" />
 $hiddenform
 </form>
 <script type="text/javascript">document.getElementsByTagName('FORM')[0].submit();</script>
