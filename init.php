@@ -7,7 +7,7 @@ if(!@$_REQUEST['SessionSite']) {
 }
 define('LOCAL_DIR', "D:/Site/$SessionSite/");
 is_dir(LOCAL_DIR) || die('NO Local system tomanage');
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
 	$cls = dirname(__FILE__).'/class/'.$class.'.class.php';
@@ -28,16 +28,16 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	$_COOKIE  = array_map('stripslashes_deep', $_COOKIE);
 	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 }
-require 'config.php';
+require './config.php';
 SYNC::init_ignores();
-
-
+GLOBAL $IGNORES;
 $submit = '';
 isset($_REQUEST['submit']) && $submit = $_REQUEST['submit'];
 $operation = '';
 isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
 $do = '';
 isset($_REQUEST['do']) && $do = $_REQUEST['do'];
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 if($do != '') {
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
