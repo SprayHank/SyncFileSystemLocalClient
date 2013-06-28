@@ -11,14 +11,6 @@ SYNC::$CONFIG['IGNORE_FILE_LIST'] = array(
 	'*.patch',
 );
 
-SYNC::init_ignores();
-$head = <<<HTM
-<!DocType HTML><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body>
-$IGNORES
-<br />
-$talkingSite
-<br /><hr />
-HTM;
 
 
 $foot = '</body></html>';
