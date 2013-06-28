@@ -13,7 +13,6 @@ SYNC::$CONFIG['IGNORE_FILE_LIST'] = array(
 
 
 
-$foot = '</body></html>';
 
 $filetype = array(
 	'chm'     => 'application/octet-stream',
