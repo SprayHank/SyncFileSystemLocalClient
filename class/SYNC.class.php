@@ -37,27 +37,76 @@ class SYNC {
 
 
 
-	private static function listfiles($dir = ".") {
+	private static function MD5_Checksum($realdir) {
+		$dir = g2u(str_replace(LOCAL_DIR, '', $realdir));
+
+		return '<input type="hidden" name="file['.$dir.']" value="'.md5_file($realdir).'" />'."\n";
+	}
+
+
+
+	private static function MD5_Verify($realdir) {
+		$dir = g2u(str_replace(LOCAL_DIR, '', $realdir));
+		if($_POST['file'][$dir] != '') {
+			$md5 = $_POST['file'][$dir];
+			unset($_POST['file'][$dir]);
+			if(md5_file($realdir) != $md5) {
+				return ("parent.addUnmatchItem('$dir', false);");
+			}
+		} else {
+			return ("parent.addUnmatchItem('$dir', 'local');");
+		}
+	}
+
+
+
+	private static function listfiles($dir = ".", $callback = NULL) {
 		GLOBAL $sublevel, $fp, $IGNORES;
-		//$sub_file_num = 0;
-		$return = '';
-		$dir          = preg_replace('/^\.\//i', '', $dir);//删除“当前文件夹”起始指示符
-		$realdir      = LOCAL_DIR.$dir;
+		$return  = '';
+		$dir     = preg_replace('/^\.\//i', '', $dir); //删除“当前文件夹”起始指示符
+		$realdir = LOCAL_DIR.$dir;
 		if(is_file("$realdir")) {
 			//fwrite($fp, md5_file($realdir) . ' *' . $dir."\n");
-			return  ('<input type="hidden" name="file['.g2u($dir).']" value="'.md5_file($realdir).'" />'."\n");
+			return (method_exists('SYNC', $callback) ? call_user_func_array(array('SYNC', $callback), array($realdir)) : NULL);
 
 		}
 
-		$handle = opendir("$realdir");
-		$sublevel++;
-		while($file = readdir($handle)) {
-			if($file == '.' || $file == '..' || preg_match($IGNORES, $file)) continue;
-			$return .= self::listfiles("$dir/$file");
+		if($handle = @opendir("$realdir")) {
+			$sublevel++;
+			while($file = readdir($handle)) {
+				if($file == '.' || $file == '..' || preg_match($IGNORES, $file)) continue;
+				$return .= self::listfiles("$dir/$file", $callback);
+			}
+			closedir($handle);
+			$sublevel--;
 		}
-		closedir($handle);
-		$sublevel--;
+
 		return $return;
+	}
+
+
+
+	public static function after_MD5_Compare_on_local() {
+		echo $javascriptHTML;
+		$filenum  = 0;
+		$sublevel = 0;
+		if(!@$_REQUEST['includefiles']) {
+			$_REQUEST['includefiles'] = array();
+		} else {
+			$_REQUEST['includefiles'] = @unserialize($_REQUEST['includefiles']);
+		}
+		$list = array_merge(explode(' ', @$_REQUEST['list']), $_REQUEST['includefiles']);
+
+
+		foreach($list as $file) {
+			$filenum += listfiles($file);
+		}
+		if(count($_POST['file'])) {
+			foreach($_POST['file'] as $file => $md5) {
+				echo("parent.addUnmatchItem('$file', 'remote');");
+			}
+		}
+		exit('parent.output();</script>');
 	}
 
 
@@ -73,8 +122,9 @@ class SYNC {
 		$sublevel = 0;
 
 		foreach($targetList as $file) {
-			$hiddenform .= self::listfiles($file);
+			$hiddenform .= self::listfiles($file, 'MD5_Checksum');
 		}
+
 		//$includefiles = serialize($includefiles);
 
 		//$package->createfile();
@@ -83,7 +133,8 @@ class SYNC {
 	}
 
 
-	public static function _sync(){//这个居然是构造函数？？？只能在前面加下划线
+
+	public static function _sync() { //这个居然是构造函数？？？只能在前面加下划线
 
 		$upload = $dnload = $delete = array();
 		foreach($_POST['file'] as $file => $option) {
@@ -121,6 +172,8 @@ class SYNC {
 			echo($res);
 		}
 	}
+
+
 
 	private function wrap_html_element($element) {
 		return '<div class="wrapper">'.$element.'</div>';
@@ -279,6 +332,7 @@ function output(){
 </script>
 HTML;
 		$HTMLTemplate .= self::$ENDHTML;
+
 		return $HTMLTemplate;
 	}
 
