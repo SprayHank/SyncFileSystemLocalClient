@@ -53,12 +53,16 @@ if($do != '') {
 			exit('Unkonwn operation');
 			break;
 	}
+	$includefilesHiddenform = '';
+	while($includefile = $includefiles){
+		$includefilesHiddenform .= "<input type='hidden' name='includefiles[]' value='$includefile' />";
+	}
 	echo <<<FOM
 		\n
 <form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
 <input type="hidden" name="operation" value="after $do on local" />
 <input type="hidden" name="list" value="$list" />
-<input type="hidden" name="includefiles" value="" />
+$includefilesHiddenform
 $hiddenform
 </form>
 <script type="text/javascript">document.getElementsByTagName('FORM')[0].submit();</script>
