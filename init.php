@@ -5,18 +5,13 @@ if(!@$_REQUEST['SessionSite']) {
 } else {
 	$SessionSite = $_REQUEST['SessionSite'];
 }
-if(!$SessionSite) {
-	exit($head.' unknow site!!'.$foot);
-}
-
 define('LOCAL_DIR', "D:/Site/$SessionSite/");
-
 is_dir(LOCAL_DIR) || die('NO Local system tomanage');
 
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
 	$cls = dirname(__FILE__).'/class/'.$class.'.class.php';
-	is_file($cls) && is_readable($cls) && require($cls);//目标为文件（非目录），可读，载入
+	is_file($cls) && is_readable($cls) && require($cls); //目标为文件（非目录），可读，载入
 }
 
 //兼容转义字符处理
@@ -37,7 +32,6 @@ require 'config.php';
 SYNC::init_ignores();
 
 
-
 $submit = '';
 isset($_REQUEST['submit']) && $submit = $_REQUEST['submit'];
 $operation = '';
@@ -45,14 +39,14 @@ isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
 $do = '';
 isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 
-if($do != ''){
+if($do != '') {
 	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
-	$list = isset($_REQUEST['list']) ? str_replace('"', '',str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
-	$listArray = explode(' ', $list);
-	$targetList = array_merge($listArray, $includefiles);
-	switch($do){
+	$list         = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
+	$listArray    = explode(' ', $list);
+	$targetList   = array_merge($listArray, $includefiles);
+	switch($do) {
 		case 'MD5 Compare':
-			$func = str_replace(' ', '_', $do);
+			$func       = str_replace(' ', '_', $do);
 			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
 			break;
 		default:
@@ -83,7 +77,7 @@ if(@!$_REQUEST['do']) {
 	$hiddenform = '';
 	if($_REQUEST['do'] == 'MD5 Compare') {
 
-	} elseif($_REQUEST['do'] == 'upload'){
+	} elseif($_REQUEST['do'] == 'upload') {
 
 
 		packfiles($targetList);
@@ -93,7 +87,7 @@ if(@!$_REQUEST['do']) {
 		$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
 		echo($res);
 		//$hiddenform .= "<input type='hidden' name='operation' value='' />";
-	} elseif($_REQUEST['do'] == 'sync'){
+	} elseif($_REQUEST['do'] == 'sync') {
 	}
 
 	exit;
@@ -108,7 +102,6 @@ if($_REQUEST['operation'] == 'postpackagetoremote') {
 }
 
 if($_REQUEST['operation'] == 'md5checkedsync') {
-
 
 
 	echo $foot;
@@ -403,7 +396,7 @@ function pulltolocal() {
 			//$message .= '<font color="green">解压总计耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
 		} else {
 			$statusCode = 300;
-			$message .= '<font color="blue">解压失败：</font><font color="red">'.$Zip->errorInfo(true).'</font><br />';
+			$message .= '<font color="blue">解压失败：</font><font color="red">'.$Zip->errorInfo(TRUE).'</font><br />';
 			//$message .= '<font color="green">执行耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
 		}
 	}
@@ -503,9 +496,10 @@ function pulltolocal() {
 		fclose($fp);
 		return $results;
 	}*/
-function MD5_Compare(){
+function MD5_Compare() {
 
 }
+
 function sendpost($url, $data) {
 	//先解析url
 	$url      = parse_url($url);
@@ -785,6 +779,7 @@ function error_handler_fun($errno, $errmsg, $errfile, $errline, $errvars) {
 	}
 	error_log($err, 3, $destination);
 }
+
 /*$arrVal["eee"] = "Hello";
 $arrVal["ee"] = "Sorry";
 $reuslt = "";
