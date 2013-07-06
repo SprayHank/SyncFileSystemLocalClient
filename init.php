@@ -13,13 +13,15 @@ function sync_autoload($class) {
 	$cls = dirname(__FILE__).'/../SyncClass/'.$class.'.Class.php';
 	is_file($cls) && is_readable($cls) && require($cls); //目标为文件（非目录），可读，载入
 }
-header('Content-type: text/html; charset=utf-8');;
+
+header('Content-type: text/html; charset=utf-8');
 //兼容转义字符处理
 version_compare(PHP_VERSION, '5.3') < 0 && set_magic_quotes_runtime(0);
 if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	function stripslashes_deep($value) {
 		return (is_array($value) ? array_map('stripslashes_deep', $value) : stripslashes($value));
 	}
+
 	$_POST    = array_map('stripslashes_deep', $_POST);
 	$_GET     = array_map('stripslashes_deep', $_GET);
 	$_COOKIE  = array_map('stripslashes_deep', $_COOKIE);
@@ -37,22 +39,15 @@ isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 if($do != '') {
-	$includefiles = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
-	$list         = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
-	$listArray    = explode(' ', $list);
-	$targetList   = array_merge($listArray, $includefiles);
-	switch($do) {
-		case 'MD5 Compare':
-		case 'upload':
-			$func       = str_replace(' ', '_', $do);
-			$hiddenform = call_user_func_array(array('Sync', $func), array($targetList));
-			break;
-		default:
-			exit('Unkonwn operation');
-			break;
-	}
+	in_array($do, array('MD5 Compare', 'upload')) || exit('Unkonwn operation');
+	$includefiles           = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
+	$list                   = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
+	$listArray              = explode(' ', $list);
+	$targetList             = array_merge($listArray, $includefiles);
+	$func                   = str_replace(' ', '_', $do);
+	$hiddenform             = call_user_func_array(array('Sync', $func), array($targetList));
 	$includefilesHiddenform = '';
-	while($includefile = $includefiles){
+	while($includefile = $includefiles) {
 		$includefilesHiddenform .= "<input type='hidden' name='includefiles[]' value='$includefile' />";
 	}
 	echo <<<FOM
@@ -274,8 +269,6 @@ HTM;
 
 	}
 }
-
-
 
 
 function curlrequest($url, $data, $method = 'post') {
