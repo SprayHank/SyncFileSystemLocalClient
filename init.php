@@ -29,7 +29,7 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 }
 require dirname(__FILE__).'/config.php';
-SYNC::init_ignores();
+Sync::init_ignores();
 GLOBAL $IGNORES;
 $submit = '';
 isset($_REQUEST['submit']) && $submit = $_REQUEST['submit'];
@@ -48,7 +48,7 @@ if($do != '') {
 		case 'MD5 Compare':
 		case 'upload':
 			$func       = str_replace(' ', '_', $do);
-			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
+			$hiddenform = call_user_func_array(array('Sync', $func), array($targetList));
 			break;
 		default:
 			exit('Unkonwn operation');
