@@ -863,7 +863,3 @@ header('Location: http://www.example.com/');
 //　　注: 自 PHP 4 起，可以通过一些输出缓冲函数来解决这个问题。代价是把所有向浏览器的输出都缓存在服务器，直到下命令发送它们。可以在代码中使用 ob_start() 及 ob_end_flush() 来实现这样的功能，或者通过修改 php.ini 中的 output_buffering 配置选项来实现，也可以通过修改服务器配置文件来实现。
 //
 //附header()两个常用用法：*/
-
-?>
-</body>
-</html>
