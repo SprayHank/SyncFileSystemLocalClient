@@ -1,5 +1,5 @@
 <?php defined('SYNCSYSTEM') || die('No direct script access.');
-
+GLOBAL $SessionSite;
 if(!@$_REQUEST['SessionSite']) {
 	$SessionSite = substr(@$_SERVER['HTTP_REFERER'], 7, (strpos(@$_SERVER['HTTP_REFERER'], 'sync.php') - 8));
 } else {
@@ -13,7 +13,7 @@ function sync_autoload($class) {
 	$cls = dirname(__FILE__).'/class/'.$class.'.class.php';
 	is_file($cls) && is_readable($cls) && require($cls); //目标为文件（非目录），可读，载入
 }
-
+header('Content-type: text/html; charset=utf-8');;
 //兼容转义字符处理
 version_compare(PHP_VERSION, '5.3') < 0 && set_magic_quotes_runtime(0);
 if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
@@ -46,6 +46,7 @@ if($do != '') {
 	$targetList   = array_merge($listArray, $includefiles);
 	switch($do) {
 		case 'MD5 Compare':
+		case 'upload':
 			$func       = str_replace(' ', '_', $do);
 			$hiddenform = call_user_func_array(array('SYNC', $func), array($targetList));
 			break;
@@ -84,12 +85,6 @@ if(@!$_REQUEST['do']) {
 	} elseif($_REQUEST['do'] == 'upload') {
 
 
-		packfiles($targetList);
-
-		$package = realpath('package.zip');
-		$data    = array('file' => "@$package");
-		$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
-		echo($res);
 		//$hiddenform .= "<input type='hidden' name='operation' value='' />";
 	} elseif($_REQUEST['do'] == 'sync') {
 	}
@@ -284,64 +279,6 @@ HTM;
 }
 
 
-function packfiles($files) {
-	global $localdir;
-	$Zip = new PclZip('./package.zip');
-	//$_REQUEST['includefiles'] = array('./xwb.php', './userapp.php');
-	$_files = array();
-	function listfiles($dir = ".", $_files) {
-		global $localdir, $ignores;
-		$dir     = preg_replace('/^\.\//i', '', $dir);
-		$realdir = $localdir.$dir;
-		if(is_file("$realdir")) {
-			//print_r($realdir);
-			//fwrite($fp, md5_file($realdir) . ' *' . $dir."\n");
-			//$hiddenform .= '<input type="hidden" name="file[' . g2u($dir) . ']" value="' . md5_file($realdir) . '" />';
-			array_push($_files, "$realdir");
-			return $_files;
-		}
-
-		$handle = opendir("$realdir");
-		while($file = readdir($handle)) {
-			if(preg_match($ignores, $file)) continue;
-			$_files = listfiles("$dir/$file", $_files);
-		}
-		closedir($handle);
-		return $_files;
-	}
-
-	foreach($files as $file) {
-		$_files = listfiles($file, $_files);
-	}
-	//print_r($_files);
-	$Zip->create($_files, PCLZIP_OPT_REMOVE_PATH, $localdir);
-	$list = $Zip->listContent();
-	if($list) {
-		$fold       = 0;
-		$fil        = 0;
-		$tot_comp   = 0;
-		$tot_uncomp = 0;
-		foreach($list as $key => $val) {
-			if($val['folder'] == '1') {
-				++$fold;
-			} else {
-				++$fil;
-				$tot_comp += $val['compressed_size'];
-				$tot_uncomp += $val['size'];
-			}
-		}
-		$message = '<font color="green">压缩目标文件：</font><font color="red"> '.'package.zip'.'</font><br />';
-		$message .= '<font color="green">压缩文件详情：</font><font color="red">共'.$fold.' 个目录，'.$fil.' 个文件</font><br />';
-		$message .= '<font color="green">压缩文档大小：</font><font color="red">'.dealsize($tot_comp).'</font><br />';
-		$message .= '<font color="green">解压文档大小：</font><font color="red">'.dealsize($tot_uncomp).'</font><br />';
-		//$message .= '<font color="green">压缩执行耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
-		echo $message;
-
-
-	} else {
-		exit ($localdir."package.zip 不能写入,请检查路径或权限是否正确.<br>");
-	}
-}
 
 
 function curlrequest($url, $data, $method = 'post') {
