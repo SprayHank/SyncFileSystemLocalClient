@@ -10,7 +10,7 @@ is_dir(LOCAL_DIR) || die('NO Local system tomanage');
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
-	$cls = dirname(__FILE__).'/class/'.$class.'.class.php';
+	$cls = dirname(__FILE__).'/../SyncClass/'.$class.'.Class.php';
 	is_file($cls) && is_readable($cls) && require($cls); //目标为文件（非目录），可读，载入
 }
 header('Content-type: text/html; charset=utf-8');;
