@@ -39,7 +39,7 @@ isset($_REQUEST['do']) && $do = $_REQUEST['do'];
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 if($do != '') {
-	in_array($do, array('MD5 Compare', 'upload')) || exit('Unkonwn operation');
+	in_array($do, array('MD5 Compare', 'upload')) || die('Unkonwn operation');
 	$includefiles           = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
 	$list                   = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
 	$listArray              = explode(' ', $list);
@@ -68,33 +68,22 @@ exit;
 
 if(@!$_REQUEST['do']) {
 } else {
-
-
 	echo $head;
 	$hiddenform = '';
 	if($_REQUEST['do'] == 'MD5 Compare') {
-
 	} elseif($_REQUEST['do'] == 'upload') {
-
-
-		//$hiddenform .= "<input type='hidden' name='operation' value='' />";
 	} elseif($_REQUEST['do'] == 'sync') {
 	}
-
 	exit;
 }
 if($_REQUEST['operation'] == 'postpackagetoremote') {
-
 	//echo realpath('package.zip');
 	$package = realpath('package.zip');
 	$res     = curlrequest("http://$SessionSite/sync.php?operation=push", array('file' => "@$package"));
 	echo $res;
 	exit;
 }
-
 if($_REQUEST['operation'] == 'md5checkedsync') {
-
-
 	echo $foot;
 } elseif($_REQUEST['operation'] == 'aftermd5check') {
 	echo $head;
@@ -141,8 +130,6 @@ if($_REQUEST['operation'] == 'md5checkedsync') {
 </form>
 HTML;*/
 } elseif($_REQUEST['operation'] == 'messagetopick') {
-
-
 } elseif($_REQUEST['operation'] == 'pulltolocal') {
 	echo $head;
 	pulltolocal();
@@ -791,33 +778,33 @@ header("Status: 404 Not Found");
 //范例四:让使用者下载档案。
 
 header("Content-type: application/x-gzip");
-header("Content-Disposition: attachment; filename=文件名");
-header("Content-Description: PHP3 Generated Data");
+header("Content-Disposition: attachment; filename=$filename");
+header("Content-Description: PHP5 Generated Data");
 
-//header -- 发送一个原始 HTTP 标头说明 　
+//header -- 发送一个原始 HTTP 标头说明
 
 //void header ( string string [, bool replace [, int http_response_code]] )
 
-//　　header() 函数用来发送一个原始 HTTP 标头。有关 HTTP 标头的更多内容见 HTTP/1.1 规范。
-//　　可选参数 replace 指明是替换掉前一条类似的标头还是增加一条相同类型的标头。默认为替换，但如果将其设为 FALSE 则可以强制发送多个同类标头。例如:
+//header() 函数用来发送一个原始 HTTP 标头。有关 HTTP 标头的更多内容见 HTTP/1.1 规范。
+//可选参数 replace 指明是替换掉前一条类似的标头还是增加一条相同类型的标头。默认为替换，但如果将其设为 FALSE 则可以强制发送多个同类标头。例如:
 
 
 header('WWW-Authenticate: Negotiate');
 header('WWW-Authenticate: NTLM', false);
 
 
-//　　第二个可选参数 http_response_code 强制将 HTTP 响应代码设为指定值（此参数是 PHP 4.3.0 新加的）。
-//　　有两种特殊的 header 调用。第一种是标头以字符串“HTTP/”（大小写不重要）开头的，可以用来确定要发送的 HTTP 状态码。例如，如果配置了 Apache 用 PHP 来处理找不到文件的错误处理请求（使用 ErrorDocument 指令），需要确保脚本产生了正确的状态码。
+//第二个可选参数 http_response_code 强制将 HTTP 响应代码设为指定值（此参数是 PHP 4.3.0 新加的）。
+//有两种特殊的 header 调用。第一种是标头以字符串“HTTP/”（大小写不重要）开头的，可以用来确定要发送的 HTTP 状态码。例如，如果配置了 Apache 用 PHP 来处理找不到文件的错误处理请求（使用 ErrorDocument 指令），需要确保脚本产生了正确的状态码。
 
 
 header("HTTP/1.0 404 Not Found")
 
 
-//　　注: HTTP 状态码标头行总是第一个被发送到客户端，而并不管实际的 header() 调用是否是第一个。除非 HTTP 标头已经发送出去，任何时候都可以通过用新的状态行调用 header() 函数来覆盖原先的。
+//注: HTTP 状态码标头行总是第一个被发送到客户端，而并不管实际的 header() 调用是否是第一个。除非 HTTP 标头已经发送出去，任何时候都可以通过用新的状态行调用 header() 函数来覆盖原先的。
 //
-//　　HTTP状态检测（HTTP Header）：http://www.veryhuo.com/tools/http_header.php
+//HTTP状态检测（HTTP Header）：http://www.veryhuo.com/tools/http_header.php
 //
-//　　第二种特殊情况是以“Location:”标头。它不只是把这个标头发送回浏览器，它还将一个 REDIRECT（302）状态码返回给浏览器，除非之前已经发出了某个 3xx 状态码。
+//第二种特殊情况是以“Location:”标头。它不只是把这个标头发送回浏览器，它还将一个 REDIRECT（302）状态码返回给浏览器，除非之前已经发出了某个 3xx 状态码。
 
 
 header("Location: http://www.example.com/");
@@ -826,26 +813,26 @@ header("Location: http://www.example.com/");
 exit;
 
 
-//　　注: HTTP/1.1 标准需要一个绝对地址的 URI 做为 Location: 的参数, 但有一些客户端支持相对 URI。通常可以使用 $_SERVER['HTTP_HOST']、$_SERVER['PHP_SELF'] 及 dirname() 函数来自己从相对 URI 产生出绝对 URI：
+//注: HTTP/1.1 标准需要一个绝对地址的 URI 做为 Location: 的参数, 但有一些客户端支持相对 URI。通常可以使用 $_SERVER['HTTP_HOST']、$_SERVER['PHP_SELF'] 及 dirname() 函数来自己从相对 URI 产生出绝对 URI：
 
 
 header("Location: http://" . $_server['http_host'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . "/" . $relative_url);
 
 
-//　　注: 即使启用了 session.use_trans_sid，Session ID 也不会随着 Location 头信息被传递。必须手工用 SID 常量来传递。
-//　　
-//　　PHP 脚本通常会产生一些动态内容，这些内容必须不被浏览器或代理服务器缓存。很多代理服务器和浏览器都可以被下面的方法禁止缓存：
+//注: 即使启用了 session.use_trans_sid，Session ID 也不会随着 Location 头信息被传递。必须手工用 SID 常量来传递。
+//
+//PHP 脚本通常会产生一些动态内容，这些内容必须不被浏览器或代理服务器缓存。很多代理服务器和浏览器都可以被下面的方法禁止缓存：
 
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // 过去的时间
 
 
-//　　注: 可能会发现即使不输出上面所有的代码，网页也没有被缓冲。用户有很多选项可以设置来改变浏览器的默认缓存行为。通过发送上述标头，应该可以覆盖任何可以导致脚本页面被缓存的设置。
-//　　
-//　　另外，当使用了 session 时，利用 session_cache_limiter() 函数和 session.cache_limiter 选项可以用来自动产生正确的缓存相关标头。
-//　　
-//　　要记住 header() 必须在任何实际输出之前调用，不论是来自普通的 HTML 标记，空行或者 PHP。有一个常见错误就是在通过 include()，require() 或一些其它的文件存取类函数读取代码时，有一些空格或者空行在调用 header() 之前被发送了出去。同样在一个单独的 PHP/HTML 文件中这个错误也很普遍。
+//注: 可能会发现即使不输出上面所有的代码，网页也没有被缓冲。用户有很多选项可以设置来改变浏览器的默认缓存行为。通过发送上述标头，应该可以覆盖任何可以导致脚本页面被缓存的设置。
+//
+//另外，当使用了 session 时，利用 session_cache_limiter() 函数和 session.cache_limiter 选项可以用来自动产生正确的缓存相关标头。
+//
+//要记住 header() 必须在任何实际输出之前调用，不论是来自普通的 HTML 标记，空行或者 PHP。有一个常见错误就是在通过 include()，require() 或一些其它的文件存取类函数读取代码时，有一些空格或者空行在调用 header() 之前被发送了出去。同样在一个单独的 PHP/HTML 文件中这个错误也很普遍。
 
 
 //这将产生一个错误，因为在调 header()
@@ -853,6 +840,6 @@ header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // 过去的时间
 header('Location: http://www.example.com/');
 
 
-//　　注: 自 PHP 4 起，可以通过一些输出缓冲函数来解决这个问题。代价是把所有向浏览器的输出都缓存在服务器，直到下命令发送它们。可以在代码中使用 ob_start() 及 ob_end_flush() 来实现这样的功能，或者通过修改 php.ini 中的 output_buffering 配置选项来实现，也可以通过修改服务器配置文件来实现。
+//注: 自 PHP 4 起，可以通过一些输出缓冲函数来解决这个问题。代价是把所有向浏览器的输出都缓存在服务器，直到下命令发送它们。可以在代码中使用 ob_start() 及 ob_end_flush() 来实现这样的功能，或者通过修改 php.ini 中的 output_buffering 配置选项来实现，也可以通过修改服务器配置文件来实现。
 //
 //附header()两个常用用法：*/
