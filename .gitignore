@@ -1,3 +1,4 @@
 package.zip
 *.log
 CONFIG_*.php
+/Sync.txt
