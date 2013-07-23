@@ -1,5 +1,4 @@
 <?php defined('SYNCSYSTEM') || die('No direct script access.');
-GLOBAL $SessionSite;
 if(!@$_REQUEST['SessionSite']) {
 	$SessionSite = substr(@$_SERVER['HTTP_REFERER'], 7, (strpos(@$_SERVER['HTTP_REFERER'], 'sync.php') - 8));
 } else {
@@ -10,7 +9,7 @@ is_dir(LOCAL_DIR) || die('NO Local system tomanage');
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 spl_autoload_register('sync_autoload');
 function sync_autoload($class) {
-	$cls = dirname(__FILE__).'/../SyncClass/'.$class.'.Class.php';
+	$cls = dirname(dirname(__FILE__)).'/SyncClass/'.$class.'.Class.php';
 	is_file($cls) && is_readable($cls) && include($cls); //目标为文件（非目录），可读，载入
 }
 
@@ -30,371 +29,54 @@ if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
 require dirname(__FILE__).'/config.php';
 Sync::init_ignores();
 GLOBAL $IGNORES;
-$submit = '';
-isset($_REQUEST['submit']) && $submit = $_REQUEST['submit'];
-$operation = '';
-isset($_REQUEST['operation']) && $operation = $_REQUEST['operation'];
-$do = '';
-isset($_REQUEST['do']) && $do = $_REQUEST['do'];
+$submit    = isset($_REQUEST['submit']) ? $_REQUEST['submit'] : '';
+$operation = isset($_REQUEST['operation']) ? $_REQUEST['operation'] : '';
+$do        = isset($_REQUEST['do']) ? $_REQUEST['do'] : '';
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+if($operation != '') {
+	in_array($operation, array('MD5 Compare', 'upload')) || die('Unkonwn operation');
+	response($operation, 'outside');
+}
+
 if($do != '') {
-	in_array($do, array('MD5 Compare', 'upload')) || die('Unkonwn operation');
+	in_array($do, array('', 'continue upload on local')) || die('Unkonwn do');
+	response($do, 'inside');
+}
+
+exit;
+function response($flag, $type) {
+	GLOBAL $SessionSite, $continue;
 	$includefiles           = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
 	$list                   = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
 	$listArray              = explode(' ', $list);
 	$targetList             = array_merge($listArray, $includefiles);
-	$func                   = str_replace(' ', '_', $do);
-	$hiddenform             = call_user_func_array(array('Sync', $func), array($targetList));
+	$func                   = str_replace(' ', '_', $flag);
+	$hiddenform             = htmlentities(call_user_func_array(array('Sync', $func), array($targetList)), ENT_QUOTES);
 	$includefilesHiddenform = '';
 	while($includefile = $includefiles) {
 		$includefilesHiddenform .= "<input type='hidden' name='includefiles[]' value='$includefile' />";
 	}
+	$do = '';
+	if($type == 'outside') {
+		$do = "after $flag on local";
+	} else if($type == 'inside') {
+		$do = strtr($flag, array('continue' => 'after'));
+	}
 	echo <<<FOM
 		\n
 <form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
-<input type="hidden" name="operation" value="after $do on local" />
+<input type="hidden" name="do" value="$do" />
 <input type="hidden" name="list" value="$list" />
+<input type="hidden" name="continue" value="$continue" />
 $includefilesHiddenform
-$hiddenform
+<input type="hidden" name="displayInfo" value="$hiddenform" />
 </form>
 <script type="text/javascript">document.getElementsByTagName('FORM')[0].submit();</script>
 FOM;
+
 }
 
-
-exit;
-
-
-if(@!$_REQUEST['do']) {
-} else {
-	echo $head;
-	$hiddenform = '';
-	if($_REQUEST['do'] == 'MD5 Compare') {
-	} elseif($_REQUEST['do'] == 'upload') {
-	} elseif($_REQUEST['do'] == 'sync') {
-	}
-	exit;
-}
-if($_REQUEST['operation'] == 'postpackagetoremote') {
-	//echo realpath('package.zip');
-	$package = realpath('package.zip');
-	$res     = curlrequest("http://$SessionSite/sync.php?operation=push", array('file' => "@$package"));
-	echo $res;
-	exit;
-}
-if($_REQUEST['operation'] == 'md5checkedsync') {
-	echo $foot;
-} elseif($_REQUEST['operation'] == 'aftermd5check') {
-	echo $head;
-	$upload = $dnload = $delete = array();
-	foreach($_POST['file'] as $file => $option) {
-		switch($option) {
-			case 'ignore':
-				$ignorelist = file_get_contents($localdir.'./sync/ignorelist.txt');
-				if(!in_array($file, explode("\n", $ignorelist))) {
-					$fp = fopen($localdir.'./sync/ignorelist.txt', 'a');
-					fwrite($fp, "\n$file");
-					fclose($fp);
-				}
-				break;
-			case 'upload':
-				$upload[] = $file;
-				break;
-			case 'dnload':
-				$dnload[] = $file;
-				//echo '<input type="hidden" name="dnload[]" value="' . $file . '" />';
-				break;
-			case 'delete':
-				$delete[] = $file;
-				//echo '<input type="hidden" name="delete[]" value="' . $file . '" />';
-				break;
-		}
-	}
-	echo '<br />upload:'.implode('<br />upload:', $upload);
-	echo '<br />dnload:'.implode('<br />dnload:', $dnload);
-	echo '<br />delete:'.implode('<br />delete:', $delete);
-	if(count($upload)) {
-		packfiles($upload);
-		$package = realpath('package.zip');
-		$data    = array('delete' => serialize($delete), 'dnload' => serialize($dnload), 'file' => "@$package");
-	} else {
-		$data = array('delete' => serialize($delete), 'dnload' => serialize($dnload));
-	}
-	$res = curlrequest("http://$SessionSite/sync.php?operation=md5checkedsync", $data);
-	echo $res;
-	exit;
-	/*echo <<<HTML
-	<br/>
-<input type="submit" name="submit" value="submit" />
-</form>
-HTML;*/
-} elseif($_REQUEST['operation'] == 'messagetopick') {
-} elseif($_REQUEST['operation'] == 'pulltolocal') {
-	echo $head;
-	pulltolocal();
-	echo $foot;
-	exit;
-} elseif($_REQUEST['operation'] == 'catchthepull') {
-
-} elseif($_REQUEST['operation'] == 'md5ResultToLocal') {
-	echo '<form action="sync.php?operation=aftermd5check" method="post">';
-	echo "<input type='hidden' name='SessionSite' value='$SessionSite' />";
-	$ignorelist = file_get_contents($localdir.'./sync/ignorelist.txt');
-	$ignorelist = explode("\n", trim($ignorelist));
-	foreach($_POST['file'] as $file => $md5) {
-		//		$item = explode(' *', $item);
-		if(in_array($file, $ignorelist)) continue;
-		if(file_exists($localdir.$file)) {
-			if(md5_file($localdir.$file) != $md5) {
-				echo <<<HTML
-<input type="radio" name="file[$file]" value="ignore" />忽略
-<input type="radio" name="file[$file]" value="upload" />上传
-<input type="radio" name="file[$file]" value="dnload" />下载
-<input type="radio" name="file[$file]" value="delete" />删除
-HTML;
-
-				echo '文件：'.($file).';<br />';
-			}
-		} else {
-			echo <<<HTML
-<input type="radio" name="file[$file]" value="ignore" />忽略
-<input type="radio" name="file[$file]" value="upload" disabled />上传
-<input type="radio" name="file[$file]" value="dnload" />下载
-<input type="radio" name="file[$file]" value="delete" />删除远程
-HTML;
-			echo '文件：'.($file).'不存在！！<br />';
-		}
-	}
-	echo '<input type="submit" value="submit" name="submit" />';
-	echo '</form>';
-} else {
-	if($_REQUEST['submit'] == '') {
-		echo $head;
-		echo <<<HTM
-		选择要压缩的文件或目录：<a href="http://$SessionSite/sync.php">浏览远程文件</a><br>
-		<form name="myform" method="post" action="$_SERVER[PHP_SELF]">
-HTM;
-		$fdir = opendir($localdir);
-		function checkfiletype($filename) {
-			$ext = strrchr($filename, '.');
-			$ext = substr($ext, 1);
-			switch($ext) {
-				case 'txt':
-					$type = 'text';
-					break;
-				case 'htm':
-					$type = 'html';
-					break;
-				default:
-					$type = $ext;
-			}
-			return $type;
-		}
-
-		echo '<div class="exploreritem">';
-		echo "<input name='includefiles[]' type='checkbox' value='' disabled /><br />";
-		echo '<input type="submit" name="submit" class="submit floder-parent" value=".." />';
-		echo '</div>';
-		while($file = readdir($fdir)) {
-			if(preg_match($ignores, $file)) continue;
-
-			echo '<div class="exploreritem">';
-			echo "<input name='includefiles[]' type='checkbox' value='$file' /><br />";
-			if(is_dir($localdir.$file)) {
-				echo '<input type="submit" name="submit" class="submit floder-page" value="'.$file.'" />';
-			} else {
-				echo '<input type="submit" name="submit" class="submit '.checkfiletype($file).'" value="'.$file.'" />';
-			}
-			echo '</div>';
-		}
-		?>
-		<br/>
-		<div style="clear:both;">
-			<input type='button' value='反选' onclick='selrev();'>
-			<input type='button' value='测试' onclick='ssd()'>
-			<input type='hidden' name='SessionSite' value="<?= $SessionSite ?>"/>
-			<input type='text' name='list' style="width:400px;"/>
-			<input type="submit" name="submit" value="zip">
-			<input type="submit" name="submit" value="md5">
-		</div>
-		<script language='javascript'>
-			function selrev() {
-				with (document.myform) {
-					for (i = 0; i < elements.length; i++) {
-						var thiselm = elements[i];
-						if (thiselm.name.match(/includefiles\[\]/))    thiselm.checked = !thiselm.checked;
-					}
-				}
-			}
-			function ssd() {
-				with (document.myform) {
-					for (i = 0; i < elements.length; i++) {
-						var thiselm = elements[i];
-						if (thiselm.name.match(/includefiles\[\]/))    thiselm.indeterminate = !thiselm.indeterminate;
-					}
-				}
-			}
-		</script>
-		</form>
-	<?php
-	} elseif($_REQUEST['submit'] == 'zip') {
-		echo $head;
-		if(!@$_REQUEST['includefiles']) {
-			$_REQUEST['includefiles'] = array();
-		}
-		$targetList = array_merge(explode(' ', @$_REQUEST['list']), $_REQUEST['includefiles']);
-
-		packfiles($targetList);
-
-		$package = realpath('package.zip');
-		$data    = array('file' => "@$package");
-		$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
-		echo $res;
-		echo $foot;
-
-
-	}
-}
-
-
-function pulltolocal() {
-	global $SessionSite, $localdir;
-	$reuslt = "";
-	$reuslt = file_get_contents("http://$SessionSite/package.zip");
-	$fp     = fopen('./package.zip', 'w');
-	fwrite($fp, $reuslt);
-	fclose($fp);
-	$path      = './';
-	$name      = 'package.zip';
-	$remove    = 0;
-	$unzippath = './';
-	if(file_exists('./package.zip') && is_file('./package.zip')) {
-		$Zip    = new PclZip('./package.zip');
-		$result = $Zip->extract(PCLZIP_OPT_PATH, $localdir);
-		if($result) {
-			$statusCode = 200;
-			$list       = $Zip->listContent();
-			$fold       = 0;
-			$fil        = 0;
-			$tot_comp   = 0;
-			$tot_uncomp = 0;
-			foreach($list as $key => $val) {
-				if($val['folder'] == '1') {
-					++$fold;
-				} else {
-					++$fil;
-					$tot_comp += $val['compressed_size'];
-					$tot_uncomp += $val['size'];
-				}
-			}
-			$message = '<font color="green">解压目标文件：</font><font color="red"> '.g2u($name).'</font><br />';
-			$message .= '<font color="green">解压文件详情：</font><font color="red">共'.$fold.' 个目录，'.$fil.' 个文件</font><br />';
-			$message .= '<font color="green">压缩文档大小：</font><font color="red">'.dealsize($tot_comp).'</font><br />';
-			$message .= '<font color="green">解压文档大小：</font><font color="red">'.dealsize($tot_uncomp).'</font><br />';
-			//$message .= '<font color="green">解压总计耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
-		} else {
-			$statusCode = 300;
-			$message .= '<font color="blue">解压失败：</font><font color="red">'.$Zip->errorInfo(TRUE).'</font><br />';
-			//$message .= '<font color="green">执行耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
-		}
-	}
-	echo($message);
-}
-
-//
-//$srv_ip = '192.168.10.188'; //你的目标服务地址或频道.
-//$srv_port = 80;
-//$url = '/demo/test_query_string.php'; //接收你post的URL具体地址
-//$fp = '';
-//$resp_str = '';
-//$errno = 0;
-//$errstr = '';
-//$timeout = 10;
-//$post_str = "username=demo&str=aaaa"; //要提交的内容.
-//
-////echo $url_str;
-//if ($srv_ip == '' || $dest_url == '') {
-//	echo('ip or dest url empty<br>');
-//}
-////echo($srv_ip);
-//$fp = fsockopen($srv_ip, $srv_port, $errno, $errstr, $timeout);
-//if (!$fp) {
-//	echo('fp fail');
-//}
-//$content_length = strlen($post_str);
-//$post_header = "POST $url HTTP/1.1\r\n";
-//$post_header .= "Content-Type: application/x-www-form-urlencoded\r\n";
-//$post_header .= "User-Agent: MSIE\r\n";
-//$post_header .= "Host: " . $srv_ip . "\r\n";
-//$post_header .= "Content-Length: " . $content_length . "\r\n";
-//$post_header .= "Connection: close\r\n\r\n";
-//$post_header .= $post_str . "\r\n\r\n";
-//fwrite($fp, $post_header);
-//while (!feof($fp)) {
-//	$resp_str .= fgets($fp, 512); //返回值放入$resp_str
-//}
-//fclose($fp);
-//echo($resp_str); //处理返回值.
-////unset ($resp_str);
-/**/
-//$url = 'http://localhost/test/curl.php';
-//$data = "request from put method";
-//$return = curlrequest($url, $data, 'put');
-//var_dump($return);
-//exit;
-/*//接收POST參數的URL
-	$url = 'http://www.google.com';
-
-//POST參數,在這個陣列裡,索引是name,值是value,沒有限定組數
-	$postdata = array(
-		'post_name' => 'post_value', 'acc' => 'hsin', 'nick' => 'joe');
-
-//函式回覆的值就是取得的內容
-	$result = sendpost($url, $postdata);
-
-	function sendpost($url, $data) {
-//先解析url 取得的資訊可以看看http://www.php.net/parse_url
-		$url = parse_url($url);
-		$url_port = $url['port'] == '' ? (($url['scheme'] == 'https') ? 443 : 80) : $url['port'];
-		if (!$url) return "couldn't parse url";
-
-//對要傳送的POST參數作處理
-		$encoded = "";
-		while (list($k, $v) = each($data)) {
-			$encoded .= ($encoded ? '&' : '');
-			$encoded .= rawurlencode($k) . "=" . rawurlencode($v);
-		}
-
-//開啟一個socket
-		$fp = fsockopen($url['host'], $url_port);
-		if (!$fp) return "Failed to open socket to " . $url['host'];
-
-//header的資訊
-		fputs($fp, "Host: " . $url['host'] . "\n");
-		fputs($fp, 'POST ' . $url['path'] . ($url['query'] ? '?' . $url['query'] : '') . " HTTP/1.0\r\n");
-		fputs($fp, "Content-type: application/x-www-form-urlencoded\n");
-		fputs($fp, "Content-length: " . strlen($encoded) . "\n");
-		fputs($fp, "Connection: close\n\n");
-		fputs($fp, $encoded . "\n");
-
-//取得回應的內容
-		$line = fgets($fp, 1024);
-		if (!eregi("^HTTP/1.. 200", $line)) return;
-		$results = "";
-		$inheader = 1;
-		while (!feof($fp)) {
-			$line = fgets($fp, 2048);
-			if ($inheader && ($line == "\n" || $line == "\r\n")) {
-				$inheader = 0;
-			} elseif (!$inheader) {
-				$results .= $line;
-			}
-		}
-
-		fclose($fp);
-		return $results;
-	}*/
 function MD5_Compare() {
 
 }
@@ -679,6 +361,306 @@ function error_handler_fun($errno, $errmsg, $errfile, $errline, $errvars) {
 	error_log($err, 3, $destination);
 }
 
+/*
+if(@!$_REQUEST['do']) {
+} else {
+	echo $head;
+	$hiddenform = '';
+	if($_REQUEST['do'] == 'MD5 Compare') {
+	} elseif($_REQUEST['do'] == 'upload') {
+	} elseif($_REQUEST['do'] == 'sync') {
+	}
+	exit;
+}
+if($_REQUEST['operation'] == 'postpackagetoremote') {
+	//echo realpath('package.zip');
+	$package = realpath('package.zip');
+	$res     = curlrequest("http://$SessionSite/sync.php?operation=push", array('file' => "@$package"));
+	echo $res;
+	exit;
+}
+if($_REQUEST['operation'] == 'md5checkedsync') {
+	echo $foot;
+} elseif($_REQUEST['operation'] == 'aftermd5check') {
+	echo $head;
+	$upload = $dnload = $delete = array();
+	foreach($_POST['file'] as $file => $option) {
+		switch($option) {
+			case 'ignore':
+				$ignorelist = file_get_contents($localdir.'./sync/ignorelist.txt');
+				if(!in_array($file, explode("\n", $ignorelist))) {
+					$fp = fopen($localdir.'./sync/ignorelist.txt', 'a');
+					fwrite($fp, "\n$file");
+					fclose($fp);
+				}
+				break;
+			case 'upload':
+				$upload[] = $file;
+				break;
+			case 'dnload':
+				$dnload[] = $file;
+				//echo '<input type="hidden" name="dnload[]" value="' . $file . '" />';
+				break;
+			case 'delete':
+				$delete[] = $file;
+				//echo '<input type="hidden" name="delete[]" value="' . $file . '" />';
+				break;
+		}
+	}
+	echo '<br />upload:'.implode('<br />upload:', $upload);
+	echo '<br />dnload:'.implode('<br />dnload:', $dnload);
+	echo '<br />delete:'.implode('<br />delete:', $delete);
+	if(count($upload)) {
+		packfiles($upload);
+		$package = realpath('package.zip');
+		$data    = array('delete' => serialize($delete), 'dnload' => serialize($dnload), 'file' => "@$package");
+	} else {
+		$data = array('delete' => serialize($delete), 'dnload' => serialize($dnload));
+	}
+	$res = curlrequest("http://$SessionSite/sync.php?operation=md5checkedsync", $data);
+	echo $res;
+	exit;
+	echo <<<HTML
+	<br/>
+<input type="submit" name="submit" value="submit" />
+</form>
+HTML;
+} elseif($_REQUEST['operation'] == 'messagetopick') {
+} elseif($_REQUEST['operation'] == 'pulltolocal') {
+	echo $head;
+	pulltolocal();
+	echo $foot;
+	exit;
+} elseif($_REQUEST['operation'] == 'catchthepull') {
+
+} elseif($_REQUEST['operation'] == 'md5ResultToLocal') {
+	echo '<form action="sync.php?operation=aftermd5check" method="post">';
+	echo "<input type='hidden' name='SessionSite' value='$SessionSite' />";
+	$ignorelist = file_get_contents($localdir.'./sync/ignorelist.txt');
+	$ignorelist = explode("\n", trim($ignorelist));
+	foreach($_POST['file'] as $file => $md5) {
+		//		$item = explode(' *', $item);
+		if(in_array($file, $ignorelist)) continue;
+		if(file_exists($localdir.$file)) {
+			if(md5_file($localdir.$file) != $md5) {
+				echo <<<HTML
+<input type="radio" name="file[$file]" value="ignore" />忽略
+<input type="radio" name="file[$file]" value="upload" />上传
+<input type="radio" name="file[$file]" value="dnload" />下载
+<input type="radio" name="file[$file]" value="delete" />删除
+HTML;
+
+				echo '文件：'.($file).';<br />';
+			}
+		} else {
+			echo <<<HTML
+<input type="radio" name="file[$file]" value="ignore" />忽略
+<input type="radio" name="file[$file]" value="upload" disabled />上传
+<input type="radio" name="file[$file]" value="dnload" />下载
+<input type="radio" name="file[$file]" value="delete" />删除远程
+HTML;
+			echo '文件：'.($file).'不存在！！<br />';
+		}
+	}
+	echo '<input type="submit" value="submit" name="submit" />';
+	echo '</form>';
+} else {
+	if($_REQUEST['submit'] == '') {
+		echo $head;
+		echo <<<HTM
+		选择要压缩的文件或目录：<a href="http://$SessionSite/sync.php">浏览远程文件</a><br>
+		<form name="myform" method="post" action="$_SERVER[PHP_SELF]">
+HTM;
+		$fdir = opendir($localdir);
+		function checkfiletype($filename) {
+			$ext = strrchr($filename, '.');
+			$ext = substr($ext, 1);
+			switch($ext) {
+				case 'txt':
+					$type = 'text';
+					break;
+				case 'htm':
+					$type = 'html';
+					break;
+				default:
+					$type = $ext;
+			}
+			return $type;
+		}
+
+		echo '<div class="exploreritem">';
+		echo "<input name='includefiles[]' type='checkbox' value='' disabled /><br />";
+		echo '<input type="submit" name="submit" class="submit floder-parent" value=".." />';
+		echo '</div>';
+		while($file = readdir($fdir)) {
+			if(preg_match($ignores, $file)) continue;
+
+			echo '<div class="exploreritem">';
+			echo "<input name='includefiles[]' type='checkbox' value='$file' /><br />";
+			if(is_dir($localdir.$file)) {
+				echo '<input type="submit" name="submit" class="submit floder-page" value="'.$file.'" />';
+			} else {
+				echo '<input type="submit" name="submit" class="submit '.checkfiletype($file).'" value="'.$file.'" />';
+			}
+			echo '</div>';
+		}
+	} elseif($_REQUEST['submit'] == 'zip') {
+		echo $head;
+		if(!@$_REQUEST['includefiles']) {
+			$_REQUEST['includefiles'] = array();
+		}
+		$targetList = array_merge(explode(' ', @$_REQUEST['list']), $_REQUEST['includefiles']);
+
+		packfiles($targetList);
+
+		$package = realpath('package.zip');
+		$data    = array('file' => "@$package");
+		$res     = curlrequest("http://$SessionSite/sync.php?operation=push", $data);
+		echo $res;
+		echo $foot;
+
+
+	}
+}
+
+
+function pulltolocal() {
+	global $SessionSite, $localdir;
+	$reuslt = "";
+	$reuslt = file_get_contents("http://$SessionSite/package.zip");
+	$fp     = fopen('./package.zip', 'w');
+	fwrite($fp, $reuslt);
+	fclose($fp);
+	$path      = './';
+	$name      = 'package.zip';
+	$remove    = 0;
+	$unzippath = './';
+	if(file_exists('./package.zip') && is_file('./package.zip')) {
+		$Zip    = new PclZip('./package.zip');
+		$result = $Zip->extract(PCLZIP_OPT_PATH, $localdir);
+		if($result) {
+			$statusCode = 200;
+			$list       = $Zip->listContent();
+			$fold       = 0;
+			$fil        = 0;
+			$tot_comp   = 0;
+			$tot_uncomp = 0;
+			foreach($list as $key => $val) {
+				if($val['folder'] == '1') {
+					++$fold;
+				} else {
+					++$fil;
+					$tot_comp += $val['compressed_size'];
+					$tot_uncomp += $val['size'];
+				}
+			}
+			$message = '<font color="green">解压目标文件：</font><font color="red"> '.g2u($name).'</font><br />';
+			$message .= '<font color="green">解压文件详情：</font><font color="red">共'.$fold.' 个目录，'.$fil.' 个文件</font><br />';
+			$message .= '<font color="green">压缩文档大小：</font><font color="red">'.dealsize($tot_comp).'</font><br />';
+			$message .= '<font color="green">解压文档大小：</font><font color="red">'.dealsize($tot_uncomp).'</font><br />';
+			//$message .= '<font color="green">解压总计耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
+		} else {
+			$statusCode = 300;
+			$message .= '<font color="blue">解压失败：</font><font color="red">'.$Zip->errorInfo(TRUE).'</font><br />';
+			//$message .= '<font color="green">执行耗时：</font><font color="red">' . G('_run_start', '_run_end', 6) . ' 秒</font><br />';
+		}
+	}
+	echo($message);
+}*/
+
+//
+//$srv_ip = '192.168.10.188'; //你的目标服务地址或频道.
+//$srv_port = 80;
+//$url = '/demo/test_query_string.php'; //接收你post的URL具体地址
+//$fp = '';
+//$resp_str = '';
+//$errno = 0;
+//$errstr = '';
+//$timeout = 10;
+//$post_str = "username=demo&str=aaaa"; //要提交的内容.
+//
+////echo $url_str;
+//if ($srv_ip == '' || $dest_url == '') {
+//	echo('ip or dest url empty<br>');
+//}
+////echo($srv_ip);
+//$fp = fsockopen($srv_ip, $srv_port, $errno, $errstr, $timeout);
+//if (!$fp) {
+//	echo('fp fail');
+//}
+//$content_length = strlen($post_str);
+//$post_header = "POST $url HTTP/1.1\r\n";
+//$post_header .= "Content-Type: application/x-www-form-urlencoded\r\n";
+//$post_header .= "User-Agent: MSIE\r\n";
+//$post_header .= "Host: " . $srv_ip . "\r\n";
+//$post_header .= "Content-Length: " . $content_length . "\r\n";
+//$post_header .= "Connection: close\r\n\r\n";
+//$post_header .= $post_str . "\r\n\r\n";
+//fwrite($fp, $post_header);
+//while (!feof($fp)) {
+//	$resp_str .= fgets($fp, 512); //返回值放入$resp_str
+//}
+//fclose($fp);
+//echo($resp_str); //处理返回值.
+////unset ($resp_str);
+/**/
+//$url = 'http://localhost/test/curl.php';
+//$data = "request from put method";
+//$return = curlrequest($url, $data, 'put');
+//var_dump($return);
+//exit;
+/*//接收POST參數的URL
+	$url = 'http://www.google.com';
+
+//POST參數,在這個陣列裡,索引是name,值是value,沒有限定組數
+	$postdata = array(
+		'post_name' => 'post_value', 'acc' => 'hsin', 'nick' => 'joe');
+
+//函式回覆的值就是取得的內容
+	$result = sendpost($url, $postdata);
+
+	function sendpost($url, $data) {
+//先解析url 取得的資訊可以看看http://www.php.net/parse_url
+		$url = parse_url($url);
+		$url_port = $url['port'] == '' ? (($url['scheme'] == 'https') ? 443 : 80) : $url['port'];
+		if (!$url) return "couldn't parse url";
+
+//對要傳送的POST參數作處理
+		$encoded = "";
+		while (list($k, $v) = each($data)) {
+			$encoded .= ($encoded ? '&' : '');
+			$encoded .= rawurlencode($k) . "=" . rawurlencode($v);
+		}
+
+//開啟一個socket
+		$fp = fsockopen($url['host'], $url_port);
+		if (!$fp) return "Failed to open socket to " . $url['host'];
+
+//header的資訊
+		fputs($fp, "Host: " . $url['host'] . "\n");
+		fputs($fp, 'POST ' . $url['path'] . ($url['query'] ? '?' . $url['query'] : '') . " HTTP/1.0\r\n");
+		fputs($fp, "Content-type: application/x-www-form-urlencoded\n");
+		fputs($fp, "Content-length: " . strlen($encoded) . "\n");
+		fputs($fp, "Connection: close\n\n");
+		fputs($fp, $encoded . "\n");
+
+//取得回應的內容
+		$line = fgets($fp, 1024);
+		if (!eregi("^HTTP/1.. 200", $line)) return;
+		$results = "";
+		$inheader = 1;
+		while (!feof($fp)) {
+			$line = fgets($fp, 2048);
+			if ($inheader && ($line == "\n" || $line == "\r\n")) {
+				$inheader = 0;
+			} elseif (!$inheader) {
+				$results .= $line;
+			}
+		}
+
+		fclose($fp);
+		return $results;
+	}*/
 /*$arrVal["eee"] = "Hello";
 $arrVal["ee"] = "Sorry";
 $reuslt = "";
