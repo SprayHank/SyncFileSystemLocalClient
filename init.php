@@ -7,31 +7,7 @@ if(!@$_REQUEST['SessionSite']) {
 define('LOCAL_DIR', "D:/Site/$SessionSite/");
 is_dir(LOCAL_DIR) || die('NO Local system tomanage');
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-spl_autoload_register('sync_autoload');
-function sync_autoload($class) {
-	$cls = dirname(dirname(__FILE__)).'/SyncClass/'.$class.'.Class.php';
-	is_file($cls) && is_readable($cls) && include($cls); //目标为文件（非目录），可读，载入
-}
-
-header('Content-type: text/html; charset=utf-8');
-//兼容转义字符处理
-version_compare(PHP_VERSION, '5.3') < 0 && set_magic_quotes_runtime(0);
-if(version_compare(PHP_VERSION, '5.4') < 0 && get_magic_quotes_gpc()) {
-	function stripslashes_deep($value) {
-		return (is_array($value) ? array_map('stripslashes_deep', $value) : stripslashes($value));
-	}
-
-	$_POST    = array_map('stripslashes_deep', $_POST);
-	$_GET     = array_map('stripslashes_deep', $_GET);
-	$_COOKIE  = array_map('stripslashes_deep', $_COOKIE);
-	$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
-}
-require dirname(__FILE__).'/config.php';
-Sync::init_ignores();
-GLOBAL $IGNORES;
-$submit    = isset($_REQUEST['submit']) ? $_REQUEST['submit'] : '';
-$operation = isset($_REQUEST['operation']) ? $_REQUEST['operation'] : '';
-$do        = isset($_REQUEST['do']) ? $_REQUEST['do'] : '';
+include './../SyncClass/init.php';
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 if($operation != '') {
