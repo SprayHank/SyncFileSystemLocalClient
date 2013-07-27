@@ -11,7 +11,7 @@ include dirname(dirname(__FILE__)).'/SyncClass/init.php';
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 if($operation != '') {
-	in_array($operation, array('MD5 Compare', 'upload')) || die('Unkonwn operation');
+	in_array($operation, array('MD5 Compare', 'upload', 'dnload')) || die('Unkonwn operation');
 	response($operation, 'outside');
 }
 
