@@ -24,7 +24,7 @@ exit;
 function response($flag, $type) {
 	GLOBAL $SessionSite, $continue;
 	$includefiles           = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
-	$list                   = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', $_REQUEST['list']))) : '';
+	$list                   = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', trim($_REQUEST['list'])))) : '';
 	$listArray              = explode(' ', $list);
 	$targetList             = array_merge($listArray, $includefiles);
 	$func                   = str_replace(' ', '_', $flag);
