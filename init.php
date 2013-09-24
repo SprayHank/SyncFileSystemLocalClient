@@ -26,6 +26,7 @@ function response($flag, $type) {
 	$includefiles           = isset($_REQUEST['includefiles']) ? $_REQUEST['includefiles'] : array();
 	$list                   = isset($_REQUEST['list']) ? str_replace('"', '', str_replace(LOCAL_DIR, '', str_replace('\\', '/', trim($_REQUEST['list'])))) : '';
 	$listArray              = explode(' ', $list);
+	$SIZE                   = isset($_REQUEST['UPLOAD_LIMIT_SIZE']) ? $_REQUEST['UPLOAD_LIMIT_SIZE'] : 0;
 	$targetList             = array_merge($listArray, $includefiles);
 	$func                   = str_replace(' ', '_', $flag);
 	$hiddenform             = htmlentities(call_user_func_array(array('Sync', $func), array($targetList)), ENT_QUOTES);
@@ -41,9 +42,10 @@ function response($flag, $type) {
 	}
 	echo <<<FOM
 		\n
-<form action="http://$SessionSite/sync" method="post" enctype="multipart/form-data">
+<form action="http://$SessionSite/sync/" method="post" enctype="multipart/form-data">
 <input type="hidden" name="do" value="$do" />
 <input type="hidden" name="list" value="$list" />
+<input type="hidden" name="UPLOAD_LIMIT_SIZE" value="$SIZE" />
 <input type="hidden" name="continue" value="$continue" />
 $includefilesHiddenform
 <input type="hidden" name="displayInfo" value="$hiddenform" />
