@@ -1,11 +1,11 @@
 <?php defined('SYNCSYSTEM') || die('No direct script access.');
 if(!@$_REQUEST['SessionSite']) {
-	$SessionSite = substr(@$_SERVER['HTTP_REFERER'], 7, (strpos(@$_SERVER['HTTP_REFERER'], 'sync.php') - 8));
+	$SessionSite = substr(@$_SERVER['HTTP_REFERER'], 7, (strpos(@$_SERVER['HTTP_REFERER'], 'sync/') - 8));
 } else {
 	$SessionSite = $_REQUEST['SessionSite'];
 }
 define('LOCAL_DIR', "D:/Site/$SessionSite/");
-is_dir(LOCAL_DIR) || die('NO Local system tomanage');
+is_dir(LOCAL_DIR) || die('NO Local system tomanage:'.$SessionSite);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 include dirname(dirname(__FILE__)).'/SyncClass/init.php';
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ function response($flag, $type) {
 	}
 	echo <<<FOM
 		\n
-<form action="http://$SessionSite/sync.php" method="post" enctype="multipart/form-data">
+<form action="http://$SessionSite/sync" method="post" enctype="multipart/form-data">
 <input type="hidden" name="do" value="$do" />
 <input type="hidden" name="list" value="$list" />
 <input type="hidden" name="continue" value="$continue" />
@@ -454,6 +454,7 @@ header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // 过去的时间
 header('Location: http://www.example.com/');
 
 
-//注: 自 PHP 4 起，可以通过一些输出缓冲函数来解决这个问题。代价是把所有向浏览器的输出都缓存在服务器，直到下命令发送它们。可以在代码中使用 ob_start() 及 ob_end_flush() 来实现这样的功能，或者通过修改 php.ini 中的 output_buffering 配置选项来实现，也可以通过修改服务器配置文件来实现。
+//注: 自 PHP 4 起，可以通过一些输出缓冲函数来解决这个问题。代价是把所有向浏览器的输出都缓存在服务器，直到下命令发送它们。可以在代码中使
+用 ob_start() 及 ob_end_flush() 来实现这样的功能，或者通过修改 php.ini 中的 output_buffering 配置选项来实现，也可以通过修改服务器配置文件来实现。
 //
 //附header()两个常用用法：*/
