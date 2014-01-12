@@ -50,9 +50,8 @@ function response($flag, $type) {
 $includefilesHiddenform
 <input type="hidden" name="displayInfo" value="$hiddenform" />
 </form>
-<script type="text/javascript">document.getElementsByTagName('FORM')[0].submit();</script>
 FOM;
-
+echo Page_Template::autoSubmit();
 }
 
 
